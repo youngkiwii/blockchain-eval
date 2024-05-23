@@ -23,6 +23,7 @@ contract SimpleVotingSystem is AccessControl {
     
     mapping(uint => Candidate) public candidates;
     mapping(address => bool) public voters;
+    mapping(address => uint256) public funds;
     uint[] private candidateIds;
     uint public votingStartTime;
     WorkflowStatus public status;

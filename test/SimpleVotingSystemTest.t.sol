@@ -4,9 +4,11 @@ pragma solidity ^0.8.19;
 import { Test } from "forge-std/Test.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import { SimpleVotingSystem } from '../src/SimpleVotingSystem.sol';
+import { DeploySimpleVotingSystem } from '../script/DeploySimpleVotingSystem.s.sol';
 
 contract SimpleVotingSystemTest is Test {
   
+  DeploySimpleVotingSystem votingSystemDeployer;
   SimpleVotingSystem votingSystem;
   address admin = makeAddr("admin");
   address founder = makeAddr("founder");
@@ -15,9 +17,12 @@ contract SimpleVotingSystemTest is Test {
   address voter3 = makeAddr("voter3");
 
   function setUp() public {
-    votingSystem = new SimpleVotingSystem();
+    votingSystemDeployer = new DeploySimpleVotingSystem();
+    votingSystem = votingSystemDeployer.run();
+    vm.startBroadcast();
     votingSystem.grantRole(votingSystem.ADMIN_ROLE(), admin);
     votingSystem.grantRole(votingSystem.FOUNDER_ROLE(), founder);
+    vm.stopBroadcast();
   }
 
   function testAddCandidate() public {
@@ -72,9 +77,9 @@ contract SimpleVotingSystemTest is Test {
     votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.REGISTER_CANDIDATES);
     votingSystem.addCandidate("Alice");
     votingSystem.addCandidate("Bob");
+    votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.VOTE);
     vm.stopPrank();
 
-    votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.VOTE);
     vm.warp(block.timestamp + 1 hours);
     
     vm.startPrank(voter1);
@@ -111,5 +116,42 @@ contract SimpleVotingSystemTest is Test {
     (bool sent, ) = address(votingSystem).call{value: 1 ether}(abi.encodeWithSignature("sendFundsToCandidate(uint256)", 1));
     vm.stopPrank();
     assertTrue(sent);
+  }
+
+  function testCandidatesCount() public {
+    vm.startPrank(admin);
+    votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.REGISTER_CANDIDATES);
+    votingSystem.addCandidate("Alice");
+    votingSystem.addCandidate("Bob");
+    votingSystem.addCandidate("Charlie");
+    vm.stopPrank();
+
+    assertEq(votingSystem.getCandidatesCount(), 3);
+  }
+
+  function testTotalVotes() public {
+    vm.startPrank(admin);
+    votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.REGISTER_CANDIDATES);
+    votingSystem.addCandidate("Alice");
+    votingSystem.addCandidate("Bob");
+    votingSystem.addCandidate("Charlie");
+    votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.VOTE);
+    vm.stopPrank();
+
+    vm.warp(block.timestamp + 1 hours);
+
+    vm.startPrank(voter1);
+    votingSystem.vote(1);
+    vm.stopPrank();
+
+    vm.startPrank(voter2);
+    votingSystem.vote(3);
+    vm.stopPrank();
+
+    vm.startPrank(voter3);
+    votingSystem.vote(1);
+    vm.stopPrank();
+
+    assertEq(votingSystem.getTotalVotes(1), 2);
   }
 }
