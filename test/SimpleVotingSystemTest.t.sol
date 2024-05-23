@@ -107,6 +107,7 @@ contract SimpleVotingSystemTest is Test {
     votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.REGISTER_CANDIDATES);
     votingSystem.addCandidate("Alice");
     votingSystem.addCandidate("Bob");
+    votingSystem.updateWorkflowStatus(SimpleVotingSystem.WorkflowStatus.FOUND_CANDIDATES);
     vm.stopPrank();
 
     vm.deal(founder, 1 ether);

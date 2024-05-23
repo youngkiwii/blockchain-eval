@@ -94,7 +94,7 @@ contract SimpleVotingSystem is AccessControl {
 		return candidates[winningCandidateId];
 	}
 
-	function sendFundsToCandidate(uint _candidateId) public payable {
+	function sendFundsToCandidate(uint _candidateId) public payable inWorkflowStatus(WorkflowStatus.FOUND_CANDIDATES) {
         require(hasRole(FOUNDER_ROLE, msg.sender), "Only founders can send funds");
         require(_candidateId > 0 && _candidateId <= candidateIds.length, "Invalid candidate ID");
 
