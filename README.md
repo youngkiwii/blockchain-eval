@@ -18,6 +18,10 @@ Voici l'énoncé :
 8. Quand vous avez implémenté une fonction, implémenter immédiatement 1 ou plusieurs tests unitaires correspondants. Donc ne passez pas à l’implémentation d’une fonction sans avoir fait de TU.
    Toute fonction sans TU ne seras pas prise en compte
 
+## Coverage
+
+![Coverage](img/coverage.png)
+
 ## Auteur
 
 Alex DURAND (me)
